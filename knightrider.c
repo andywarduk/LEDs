@@ -12,7 +12,7 @@ unsigned int bitpatterns[] = {
     0x000, // 0000 0000 0000, 0 bits
     0x020, // 0000 0010 0000, 1 bit
     0x249, // 0010 0100 1001, 4 bits
-    0xfff // 1111 1111 1111, 12 bits
+    0xfff  // 1111 1111 1111, 12 bits
 };
 
 typedef struct
@@ -25,6 +25,7 @@ typedef struct
 unsigned int phase = 0;
 
 void onfor(int led, int r, int g, int b, useconds_t usecs);
+
 
 int main()
 {
@@ -73,7 +74,7 @@ int main()
 
         // Move the blob
         if (position == 0) direction = 1;
-        if (position == LEDS-1) direction = -1;
+        if (position == LEDS - 1) direction = -1;
         position += direction;
     }
 
