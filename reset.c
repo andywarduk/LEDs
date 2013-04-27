@@ -3,17 +3,17 @@
 #include "gpio.h"
 #include "leds.h"
 
-int main(int argc, char **argv)
+int main()
 {
-  int i;
+    int i;
 
-  if(!led_init()) exit(-1);
+    if (!led_init()) exit(-1);
 
-  // Switch LEDs off
-  for(i = 0 ; i < 5 ; i++){
-    led_off(i);
-  }
+    // Switch LEDs off
+    for (i = 0; i < 5; i++) {
+        led_off(i);
+    }
 
-  return 0;
+    return 0;
 }
 

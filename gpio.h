@@ -1,22 +1,40 @@
-#define BCM2708_PERI_BASE        0x20000000
-#define GPIO_BASE                (BCM2708_PERI_BASE + 0x200000) /* GPIO controller */
-
-#define BLOCK_SIZE (4*1024)
-
-extern volatile unsigned *gpio;
+extern volatile unsigned int *gpio;
 int setup_gpio();
 
-// GPIO setup macros. Always use INP_GPIO(x) before using OUT_GPIO(x) or SET_GPIO_ALT(x,y)
-#define INP_GPIO(g) *(gpio+((g)/10)) &= ~(7<<(((g)%10)*3))
-#define OUT_GPIO(g) *(gpio+((g)/10)) |=  (1<<(((g)%10)*3))
-#define SET_GPIO_ALT(g,a) *(gpio+(((g)/10))) |= (((a)<=3?(a)+4:(a)==4?3:2)<<(((g)%10)*3))
 
-#define GPIO_ADDR(g) ((g) / 10)
-#define GPIO_REG(g) (*(gpio + GPIO_ADDR(g)))
-#define GPIO_SHIFT(g) (((g) % 10) * 3)
-#define GPIO_MASK(g) (7 << GPIO_SHIFT(g))
-#define GPIO_MODE(g) ((GPIO_REG(g) & GPIO_MASK(g)) >> GPIO_SHIFT(g))
+#define BCM2708_PERI_BASE        0x20000000
+#define GPIO_BASE                (BCM2708_PERI_BASE + 0x200000) // GPIO controller
 
-#define GPIO_SET(g) (*(gpio + 7 + ((g) / 32)) = (1 << (g)))
-#define GPIO_CLR(g) (*(gpio + 10 + ((g) / 32)) = (1 << (g)))
 
+// Function select register
+#define GPIO_FSEL_OFFSET(g) ((g) / 10)
+#define GPIO_FSEL_REG(g) (*(gpio + GPIO_FSEL_OFFSET(g)))
+#define GPIO_FSEL_SHIFT(g) (((g) % 10) * 3)
+#define GPIO_FSEL_MASK(g) (7 << GPIO_FSEL_SHIFT(g))
+#define GPIO_FSEL_MODE(g) ((GPIO_FSEL_REG(g) & GPIO_FSEL_MASK(g)) >> GPIO_FSEL_SHIFT(g))
+
+// Always use GPIO_INP(x) before using GPIO_OUT(x) or GPIO_ALT(x, y)
+#define GPIO_INP(g) GPIO_FSEL_REG(g) &= ~(GPIO_FSEL_MASK(g))
+#define GPIO_OUT(g) GPIO_FSEL_REG(g) |=  (1 << GPIO_FSEL_SHIFT(g))
+#define GPIO_ALT(g, a) GPIO_FSEL_REG(g) |= (((a) <= 3 ? (a) + 4 : (a) == 4 ? 3 : 2 ) << GPIO_FSEL_SHIFT(g))
+
+
+// Pin set registers
+#define GPIO_SET_OFFSET(g) (7 + ((g) / 32))
+#define GPIO_SET_REG(g) (*(gpio + GPIO_SET_OFFSET(g)))
+#define GPIO_SET_SHIFT(g) ((g) % 32)
+#define GPIO_SET(g) (GPIO_SET_REG(g) = (1 << GPIO_SET_SHIFT(g)))
+
+
+// Pin clear registers
+#define GPIO_CLR_OFFSET(g) (10 + ((g) / 32))
+#define GPIO_CLR_REG(g) (*(gpio + GPIO_CLR_OFFSET(g)))
+#define GPIO_CLR_SHIFT(g) ((g) % 32)
+#define GPIO_CLR(g) (GPIO_CLR_REG(g) = (1 << GPIO_CLR_SHIFT(g)))
+
+
+// Pin level registers
+#define GPIO_LEV_OFFSET(g) (13 + ((g) / 32))
+#define GPIO_LEV_REG(g) (*(gpio + GPIO_LEV_OFFSET(g)))
+#define GPIO_LEV_SHIFT(g) ((g) % 32)
+#define GPIO_LEV(g) ((GPIO_LEV_REG(g) & (1 << GPIO_LEV_SHIFT(g))) >> GPIO_LEV_SHIFT(g))

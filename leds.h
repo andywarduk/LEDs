@@ -28,4 +28,3 @@ extern int ledpins[];
 int led_init();
 void led_on(int led, int r, int g, int b);
 void led_off(int led);
-
