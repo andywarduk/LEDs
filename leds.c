@@ -1,8 +1,16 @@
+#include <stdio.h>
+#include <unistd.h>
+#ifdef _POSIX_PRIORITY_SCHEDULING
+#include <sched.h>
+#endif
+#include <string.h>
 #include "leds.h"
 #include "gpio.h"
 
 int pins[] = {LED1, LED2, LED3, LED4, LED5, RED, GREEN, BLUE};
 int ledpins[] = {LED5, LED4, LED3, LED2, LED1};
+
+void setRT();
 
 int led_init()
 {
@@ -10,6 +18,9 @@ int led_init()
 
   // Set up gpi pointer for direct register access
   if(!setup_gpio()) return 0;
+
+  // Set up real time scheduling for this process
+  setRT();
 
   // Set pins to output
   for (i = 0 ; i < sizeof(pins) / sizeof(int) ; i++){
@@ -23,6 +34,22 @@ int led_init()
   }
 
   return 1;
+}
+
+void setRT()
+{
+#ifdef _POSIX_PRIORITY_SCHEDULING
+  int scheduler = SCHED_FIFO;
+  struct sched_param schedparam;
+
+  memset(&schedparam,0,sizeof(struct sched_param));
+  schedparam.sched_priority = sched_get_priority_max(scheduler);
+  if(sched_setscheduler(0, scheduler, &schedparam) != 0){
+    perror("Unable to elevate to real time scheduling");
+  }
+#else
+  printf("Real time scheduling not available\n");
+#endif
 }
 
 void led_on(int led, int r, int g, int b)
