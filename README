@@ -1,0 +1,29 @@
+WHAT THIS IS:
+
+This is a collection of programs to drive Meltwater's add-on board for the Raspberry pi - see http://pihw.wordpress.com/meltwaters-pi-hardware-kits/rgb-led-kit/
+
+
+COMPILING:
+
+1. If you are running a revision 2 raspberry pi, edit leds.h and change PIN13 to PIN13_R2 (instead of PIN13_R1)
+2. Run 'make' from the command line
+
+
+RUNNING:
+
+rainbow - displays rainbow colours by high speed switching between the LEDs. Takes the delay in microseconds as an argument, eg:
+
+$ sudo ./rainbow 2000
+
+shades - attempt to control the intensity of the LEDs using high speed switching. There are four levels of intensity - Fully off (0), 1/12th on (1), 4/12 on (2) and fully on (3). The LEDs are configured and displayed as 3-2-1-2-3. The colours are cycled every second also.
+
+$ sudo ./shades
+
+knightrider - A KITT-like sweeping led trail. Will mean nothing to you if you're born after 1980! The leading LED is full intensity, the one after it 4/12 intensity, then 1/12 intensity.
+
+$ sudo ./knightrider
+
+
+CREDITS:
+
+Thanks to Meltwater for designing the board (http://pihardware.com/), Carlos for making it for me (http://retrotext.blogspot.co.uk/) and Dom & Gert for providing boiler plate GPIO C code (http://elinux.org/RPi_Low-level_peripherals#C).
