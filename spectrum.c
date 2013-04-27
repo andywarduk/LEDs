@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
+#include <stddef.h>
 #include "gpio.h"
 #include "leds.h"
 
@@ -29,16 +30,22 @@ void onfor(int led, int r, int g, int b, useconds_t usecs);
 
 int main()
 {
+    int stage;
     int i;
     unsigned int j;
+
+    unsigned int l1;
+    unsigned int l2;
+    unsigned int l3;
+
+    void *statebase;
+    unsigned int p1;
+    unsigned int p2;
+    unsigned int p3;
 
     unsigned int r;
     unsigned int g;
     unsigned int b;
-
-    unsigned int ron;
-    unsigned int gon;
-    unsigned int bon;
 
     leddef *ledstate[LEDS];
     leddef ledstatearray[LEDS];
@@ -54,13 +61,33 @@ int main()
         ledstate[i] = &ledstatearray[i];
     }
 
+    stage = 1;
     while (1) {
-        for (r = 0; r < 6 ; r++) {
-            for (g = 0; g < 6 ; g++) {
-                for (b = 0; b < 6 ; b++) {
-                    ledstate[LEDS - 1]->r = (r > 3 ? 6 - r : r);
-                    ledstate[LEDS - 1]->g = (g > 3 ? 6 - g : g);
-                    ledstate[LEDS - 1]->b = (b > 3 ? 6 - b : b);
+        switch(stage){
+        case 1:
+            p1 = offsetof(leddef, b);
+            p2 = offsetof(leddef, g);
+            p3 = offsetof(leddef, r);
+            break;
+        case 2:
+            p1 = offsetof(leddef, g);
+            p2 = offsetof(leddef, r);
+            p3 = offsetof(leddef, b);
+            break;
+        case 3:
+            p1 = offsetof(leddef, r);
+            p2 = offsetof(leddef, b);
+            p3 = offsetof(leddef, g);
+            break;
+        }
+
+        for (l1 = 0; l1 < 6; l1++) {
+            for (l2 = 0; l2 < 6; l2++) {
+                for (l3 = 0; l3 < 6; l3++) {
+                    statebase = (void *) ledstate[LEDS - 1];
+                    *((unsigned int *)(statebase + p1)) = (l1 > 3 ? 6 - l1 : l1);
+                    *((unsigned int *)(statebase + p2)) = (l2 > 3 ? 6 - l2 : l2);
+                    *((unsigned int *)(statebase + p3)) = (l3 > 3 ? 6 - l3 : l3);
 
                     // Display for one tenth second
                     for (j = 0; j < (90000 / (QUANTA * LEDS * PATTERNBITS)); j++) {
@@ -68,23 +95,26 @@ int main()
                         for (phase = 0; phase < PATTERNBITS; phase++) {
                             // For each led
                             for (i = 0; i < LEDS; i++) {
-                                ron = (bitpatterns[ledstate[i]->r] & (1 << phase) ? 1 : 0);
-                                gon = (bitpatterns[ledstate[i]->g] & (1 << phase) ? 1 : 0);
-                                bon = (bitpatterns[ledstate[i]->b] & (1 << phase) ? 1 : 0);
-                                onfor(i, ron, gon, bon, QUANTA);
+                                r = (bitpatterns[ledstate[i]->r] & (1 << phase) ? 1 : 0);
+                                g = (bitpatterns[ledstate[i]->g] & (1 << phase) ? 1 : 0);
+                                b = (bitpatterns[ledstate[i]->b] & (1 << phase) ? 1 : 0);
+                                onfor(i, r, g, b, QUANTA);
                             }
                         }
                     }
 
                     // Move
                     tmpstate = ledstate[0];
-                    for (i = 0 ; i < LEDS - 1 ; i++) {
+                    for (i = 0; i < LEDS - 1; i++) {
                         ledstate[i] = ledstate[i+1];
                     }
                     ledstate[LEDS - 1] = tmpstate;
                 }
             }
         }
+
+        ++stage;
+        if (stage == 4) stage = 1;
     }
 
     return 0;
