@@ -17,7 +17,7 @@ int setup_gpio()
 
     /* open /dev/mem */
     if ((mem_fd = open("/dev/mem", O_RDWR | O_SYNC)) < 0) {
-        perror("Unable to open /dev/mem\n");
+        perror("Unable to open /dev/mem");
         return 0;
     }
 

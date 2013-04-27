@@ -23,6 +23,18 @@ knightrider - A KITT-like sweeping led trail. Will mean nothing to you if you're
 
 $ sudo ./knightrider
 
+coloursweep - same as the above byt with red, yellow green
+
+$ sudo ./coloursweep
+
+spectrum - cycles all colours in all intensities
+
+$ sudo ./spectrum
+
+reset - resets all GPIO pins
+
+$ sudo ./reset
+
 
 CREDITS:
 
