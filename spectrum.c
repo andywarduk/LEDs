@@ -16,14 +16,17 @@ unsigned int bitpatterns[] = {
     0xfff  // 1111 1111 1111, 12 bits
 };
 
+unsigned int intensities[] = {
+    0, 1, 1, 2, 2, 3, 3, 2, 2, 1, 1, 0
+};
+#define INTENSITIES (sizeof(intensities) / sizeof(unsigned int))
+
 typedef struct
 {
     unsigned int r;
     unsigned int g;
     unsigned int b;
 } leddef;
-
-unsigned int phase = 0;
 
 void onfor(int led, int r, int g, int b, useconds_t usecs);
 
@@ -50,6 +53,8 @@ int main()
     leddef *ledstate[LEDS];
     leddef ledstatearray[LEDS];
     leddef *tmpstate;
+
+    unsigned int phase = 0;
 
     if (!led_init()) exit(-1);
 
@@ -81,16 +86,16 @@ int main()
             break;
         }
 
-        for (l1 = 0; l1 < 6; l1++) {
-            for (l2 = 0; l2 < 6; l2++) {
-                for (l3 = 0; l3 < 6; l3++) {
+        for (l1 = 0; l1 < INTENSITIES; l1++) {
+            for (l2 = 0; l2 < INTENSITIES; l2++) {
+                for (l3 = 0; l3 < INTENSITIES; l3++) {
                     statebase = (void *) ledstate[LEDS - 1];
-                    *((unsigned int *)(statebase + p1)) = (l1 > 3 ? 6 - l1 : l1);
-                    *((unsigned int *)(statebase + p2)) = (l2 > 3 ? 6 - l2 : l2);
-                    *((unsigned int *)(statebase + p3)) = (l3 > 3 ? 6 - l3 : l3);
+                    *((unsigned int *)(statebase + p1)) = intensities[l1];
+                    *((unsigned int *)(statebase + p2)) = intensities[l2];
+                    *((unsigned int *)(statebase + p3)) = intensities[l3];
 
                     // Display for one tenth second
-                    for (j = 0; j < (90000 / (QUANTA * LEDS * PATTERNBITS)); j++) {
+                    for (j = 0; j < (80000 / (QUANTA * LEDS * PATTERNBITS)); j++) {
                         // For each phase
                         for (phase = 0; phase < PATTERNBITS; phase++) {
                             // For each led
