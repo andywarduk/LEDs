@@ -73,16 +73,25 @@ int main()
             p1 = offsetof(leddef, b);
             p2 = offsetof(leddef, g);
             p3 = offsetof(leddef, r);
+#ifdef DEBUG
+            printf("Cycling Blue > Green > Red\n");
+#endif
             break;
         case 2:
             p1 = offsetof(leddef, g);
             p2 = offsetof(leddef, r);
             p3 = offsetof(leddef, b);
+#ifdef DEBUG
+            printf("Cycling Green > Red > Blue\n");
+#endif
             break;
         case 3:
             p1 = offsetof(leddef, r);
             p2 = offsetof(leddef, b);
             p3 = offsetof(leddef, g);
+#ifdef DEBUG
+            printf("Cycling Red > Blue > Green\n");
+#endif
             break;
         }
 

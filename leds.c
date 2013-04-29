@@ -7,36 +7,71 @@
 #include "leds.h"
 #include "gpio.h"
 
-int pins[] = {LED1, LED2, LED3, LED4, LED5, RED, GREEN, BLUE};
-int ledpins[] = {LED5, LED4, LED3, LED2, LED1};
+int redpin;
+int greenpin;
+int bluepin;
+int ledpins[5];
 
-void setRT();
+static void setRT();
+static int get_pin(int hdr_pin, char *desc);
+static void setup_pin(int gpio_num);
 
 int led_init()
 {
     unsigned int i;
 
     // Set up gpi pointer for direct register access
-    if (!setup_gpio()) return 0;
+    if (!gpio_setup()) return 0;
 
-    // Set up real time scheduling for this process
-    setRT();
+    // Setup pin maps
+    redpin = get_pin(11, "Red");
+    greenpin = get_pin(13, "Green");
+    bluepin = get_pin(15, "Blue");
+
+    ledpins[0] = get_pin(7, "LED 5");
+    ledpins[1] = get_pin(22, "LED 4");
+    ledpins[2] = get_pin(18, "LED 3");
+    ledpins[3] = get_pin(16, "LED 2");
+    ledpins[4] = get_pin(12, "LED 1");
 
     // Set pins to output
-    for (i = 0; i < sizeof (pins) / sizeof (int); i++) {
-        GPIO_INP(pins[i]); // Must use GPIO_INP before we can use GPIO_OUT
-        GPIO_OUT(pins[i]);
+    for (i = 0; i < sizeof (ledpins) / sizeof (int); i++) {
+        setup_pin(ledpins[i]);
     }
+    setup_pin(redpin);
+    setup_pin(greenpin);
+    setup_pin(bluepin);
 
     // Set led pins high
     for (i = 0; i < sizeof (ledpins) / sizeof (int); i++) {
         GPIO_SET(ledpins[i]);
     }
 
+    // Set up real time scheduling for this process
+    setRT();
+
     return 1;
 }
 
-void setRT()
+static int get_pin(int hdr_num, char *desc)
+{
+    int gpio_num;
+
+    gpio_num = gpio_pinmap[hdr_num];
+#ifdef DEBUG
+    printf("Header pin %d (%s) is GPIO %d\n", hdr_num, desc, gpio_num);
+#endif
+
+    return gpio_num;
+}
+
+static void setup_pin(int gpio_num)
+{
+    GPIO_INP(gpio_num); // Must use GPIO_INP before we can use GPIO_OUT
+    GPIO_OUT(gpio_num);
+}
+
+static void setRT()
 {
 #ifdef _POSIX_PRIORITY_SCHEDULING
     int scheduler = SCHED_FIFO;
@@ -56,21 +91,21 @@ void led_on(int led, int r, int g, int b)
 {
     // Set red pin
     if (r)
-        GPIO_SET(RED);
+        GPIO_SET(redpin);
     else
-        GPIO_CLR(RED);
+        GPIO_CLR(redpin);
 
     // Set green pin
     if (g)
-        GPIO_SET(GREEN);
+        GPIO_SET(greenpin);
     else
-        GPIO_CLR(GREEN);
+        GPIO_CLR(greenpin);
 
     // Set blue pin
     if (b)
-        GPIO_SET(BLUE);
+        GPIO_SET(bluepin);
     else
-        GPIO_CLR(BLUE);
+        GPIO_CLR(bluepin);
 
     // Set led pin low
     GPIO_CLR(ledpins[led]);

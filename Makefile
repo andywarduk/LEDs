@@ -1,3 +1,6 @@
+DEBUG=
+# Uncomment to build with DEBUG then make clean, make
+# DEBUG=-DDEBUG
 
 all: dumpgpio rainbow shades knightrider reset coloursweep spectrum
 
@@ -23,7 +26,7 @@ reset: gpio.o leds.o reset.o
 	gcc -Wall -Wextra $^ -o $@
 
 %.o: %.c
-	gcc -c $^ -Wall -Wextra -fPIC -fno-inline -g -o $@
+	gcc $(DEBUG) -c $^ -Wall -Wextra -fPIC -fno-inline -g -o $@
 
 clean:
 	rm -f *.o *~ core.*

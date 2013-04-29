@@ -38,4 +38,4 @@ $ sudo ./reset
 
 CREDITS:
 
-Thanks to Meltwater for designing the board (http://pihardware.com/), Carlos for making it for me (http://retrotext.blogspot.co.uk/) and Dom & Gert for providing boiler plate GPIO C code (http://elinux.org/RPi_Low-level_peripherals#C).
+Thanks to Meltwater for designing the board (http://pihardware.com/), Carlos for making it for me (http://retrotext.blogspot.co.uk/), Dom & Gert for providing boiler plate GPIO C code (http://elinux.org/RPi_Low-level_peripherals#C) and the raspberry-gpio-python project (https://code.google.com/p/raspberry-gpio-python/) for pi revision detection code.

@@ -7,7 +7,7 @@ int main()
     int i;
     int mode;
 
-    if (!setup_gpio()) exit(-1);
+    if (!gpio_setup()) exit(-1);
 
     printf("Register dump:\n");
     printf("  GPFSEL0: %08x\n", *(gpio + 0));

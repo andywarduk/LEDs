@@ -1,5 +1,6 @@
 extern volatile unsigned int *gpio;
-int setup_gpio();
+extern int *gpio_pinmap;
+int gpio_setup();
 
 
 #define BCM2708_PERI_BASE        0x20000000
