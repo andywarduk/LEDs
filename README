@@ -5,8 +5,7 @@ This is a collection of programs to drive Meltwater's add-on board for the Raspb
 
 COMPILING:
 
-1. If you are running a revision 2 raspberry pi, edit leds.h and change PIN13 to PIN13_R2 (instead of PIN13_R1)
-2. Run 'make' from the command line
+1. Run 'make' from the command line
 
 
 RUNNING:
@@ -23,7 +22,7 @@ knightrider - A KITT-like sweeping led trail. Will mean nothing to you if you're
 
 $ sudo ./knightrider
 
-coloursweep - same as the above byt with red, yellow green
+coloursweep - same as the above but with red, yellow green
 
 $ sudo ./coloursweep
 

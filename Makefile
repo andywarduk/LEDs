@@ -2,7 +2,12 @@ DEBUG=
 # Uncomment to build with DEBUG then make clean, make
 # DEBUG=-DDEBUG
 
-all: dumpgpio rainbow shades knightrider reset coloursweep spectrum progress
+TARGETS=dumpgpio rainbow shades knightrider reset coloursweep spectrum progress rate
+
+all: $(TARGETS)
+
+install: $(TARGETS)
+	cp $(TARGETS) /usr/local/bin
 
 dumpgpio: gpio.o dumpgpio.o
 	gcc -Wall -Wextra $^ -o $@
@@ -23,6 +28,9 @@ spectrum: gpio.o leds.o spectrum.o
 	gcc -Wall -Wextra $^ -o $@
 
 progress: gpio.o leds.o progress.o
+	gcc -Wall -Wextra $^ -o $@
+
+rate: gpio.o leds.o rate.o
 	gcc -Wall -Wextra $^ -o $@
 
 reset: gpio.o leds.o reset.o
