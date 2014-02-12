@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
+#include <string.h>
 #include "gpio.h"
 #include "leds.h"
 
@@ -12,7 +13,7 @@ void onfor(int led, int r, int g, int b, useconds_t usecs);
 
 void Usage(char *prog)
 {
-    printf("Usage: %s <rate> <scale> <dispsecs>\n", prog);
+    printf("Usage: %s [-i LED] [-l] <rate> <scale> <dispsecs>\n", prog);
     exit(1);
 }
 
@@ -22,25 +23,67 @@ int main(int argc, char **argv)
     int scale;
     int dispsecs;
 
-    int curled;
+    int curled = 0;
     unsigned int amt;
     unsigned int trigger;
 
     unsigned int i;
 
+    unsigned int argcnt;
+    char **nextarg;
+
+    int r = 1;
+    int g = 0;
+    int b = 0;
+
+    int leavelit = 0;
+
+    argcnt = argc;
+    nextarg = argv;
+
+    ++nextarg;
+
     // Get args
-    if(argc != 4){
+    if(argcnt < 4){
         Usage(argv[0]);
     }
-    rate = atoi(argv[1]);
-    scale = atoi(argv[2]);
-    dispsecs = atoi(argv[3]);
+
+    do{
+        if(strcmp(*nextarg, "-i") == 0){
+	    ++nextarg;
+	    curled = atoi(*nextarg);
+            if(curled > LEDS) curled = 0;
+            ++nextarg;
+            argcnt -= 2;
+        }
+        else if(strcmp(*nextarg, "-l") == 0){
+            leavelit = 1;
+            ++nextarg;
+            --argcnt;
+        }
+        else break;
+    } while(1);
+
+    if(argcnt != 4){
+        Usage(argv[0]);
+    }
+
+    rate = atoi(*nextarg);
+    ++nextarg;
+
+    scale = atoi(*nextarg);
+    ++nextarg;
+
+    dispsecs = atoi(*nextarg);
+    ++nextarg;
+
     if(dispsecs <= 0){
         Usage(argv[0]);
     }
     if(scale <= 0){
         Usage(argv[0]);
     }
+
     trigger = scale * (1000000 / QUANTA);
     if(rate < 0) rate = 0;
 
@@ -48,11 +91,10 @@ int main(int argc, char **argv)
     if (!led_init()) exit(-1);
 
     // Initialise current LED and current amount
-    curled = 0;
     amt = 0;
 
     for (i = 0; i < ((unsigned int) dispsecs * 1000000) / QUANTA; i++){
-        onfor(curled, 1, 0, 0, QUANTA);
+        onfor(curled, r, g, b, QUANTA);
         amt += rate;
         if(amt > trigger){
             ++curled;
@@ -61,7 +103,9 @@ int main(int argc, char **argv)
         }
     }
 
-    return 0;
+    if(leavelit) led_on(curled, r, g, b);
+
+    return curled;
 }
 
 void onfor(int led, int r, int g, int b, useconds_t usecs)
