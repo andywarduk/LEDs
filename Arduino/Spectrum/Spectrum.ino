@@ -66,6 +66,13 @@ leddef ledstruct[noleds];
 leddef *leds[noleds];
 
 
+// Prototypes
+
+void setLed(int led, int r, int g, int b);
+
+
+// Functions
+
 void setup()
 {                
   int i;
