@@ -159,7 +159,7 @@ void loop()
   int l1;
   int l2;
   int l3;
-  void *statebase;
+  byte *statebase;
   int i;
   int l;
   leddef *tmpled;
@@ -199,7 +199,7 @@ void loop()
 #endif
       for(l2=0; l2<nointensityvalsshort; l2++){
         for(l3=0; l3<nointensityvalslong; l3++){
-          statebase = (void *) leds[noleds - 1];
+          statebase = (byte *) leds[noleds - 1];
           *((int *)(statebase + p1)) = intensities[intensityvalsshort[l1]];
           *((int *)(statebase + p2)) = intensities[intensityvalsshort[l2]];
           *((int *)(statebase + p3)) = intensities[intensityvalslong[l3]];
