@@ -1,4 +1,11 @@
 
+typedef struct
+{
+  int r;
+  int g;
+  int b;
+} LEDDef;
+
 class LEDs
 {
 public:
@@ -20,6 +27,16 @@ public:
   LEDs();
   ~LEDs();
 
-  void setLed(int led, int r, int g, int b, int ms);
+  void resetLeds();
+  LEDDef *getLed(int led);
+  void setLed(int led, int r, int g, int b);
+  void dispLeds(int count, int delay);
+  void shuffleDown();
+
+private:
+  LEDDef LEDState[noLeds];
+  LEDDef *LEDOrder[noLeds];
+
+  void dispLed(int led, int r, int g, int b, int delay);
 };
 

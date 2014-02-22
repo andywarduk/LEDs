@@ -30,33 +30,23 @@ const int noIntensityVals = (sizeof(intensityVals) / sizeof(int));
 
 // Variables
 
-typedef struct
-{
-  int r;
-  int g;
-  int b;
-} 
-ledDef;
-
-ledDef ledStruct[LEDs::noLeds];
-
-LEDs ledsClass;
+LEDs leds;
 
 
 // Functions
 
 void setup()
-{                
+{
+#ifdef DEBUG
   int i;
 
-#ifdef DEBUG
   Serial.begin(9600); 
 
   Serial.println("---=== KnightRider ===---");
 
   // Dump led pins
   Serial.print("ledPins["); Serial.print(LEDs::noLeds); Serial.print("] = {");
-  for(i=0; i<LEDs::noLeds; i++){
+  for(i = 0; i < LEDs::noLeds; i++){
     if(i > 0) Serial.print(", ");
     Serial.print(LEDs::ledPins[i]);
   }
@@ -76,7 +66,7 @@ void setup()
 
   // Dump intensities
   Serial.print("intensities["); Serial.print(noIntensity);  Serial.print("] = {");
-  for(i=0; i<noIntensity; i++){
+  for(i = 0; i < noIntensity; i++){
     if(i > 0) Serial.print(", ");
     Serial.print(intensities[i]);
     Serial.print("%");
@@ -84,19 +74,12 @@ void setup()
   Serial.println("}");
 
   Serial.print("intensityVals["); Serial.print(noIntensityVals); Serial.print("] = {");
-  for(i=0; i<noIntensityVals; i++){
+  for(i = 0; i < noIntensityVals; i++){
     if(i > 0) Serial.print(", ");
     Serial.print(intensityVals[i]);
   }
   Serial.println("}");
 #endif
-
-  // initialise the LED structs and pointers.
-  for(i=0; i<LEDs::noLeds; i++){
-    ledStruct[i].r = 0;
-    ledStruct[i].g = 0;
-    ledStruct[i].b = 0;
-  }
 }
 
 
@@ -107,24 +90,20 @@ int direction = 1;
 
 void loop()
 {
-  int i,l;
+  int i;
   int intensity;
+  LEDDef *led;
 
   // Set up led state
-  for (i = 0; i < LEDs::noLeds; i++) {
-    ledStruct[i].r = 0;
-  }
+  leds.resetLeds();
+
   for (intensity = 3, i = position; intensity > 0 && i >= 0 && i < LEDs::noLeds; intensity--, i -= direction) {
-    ledStruct[i].r = intensities[intensityVals[intensity]];
+    led = leds.getLed(i);
+    led->r = intensities[intensityVals[intensity]];
   }
 
-  // For each frame
-  for (i = 0; i < noFrames; i++) {
-    // For each led
-    for (l = 0; l < LEDs::noLeds; l++) {
-      ledsClass.setLed(l, ledStruct[l].r, ledStruct[l].g, ledStruct[l].b, quanta);
-    }
-  }
+  // Display the LEDs
+  leds.dispLeds(noFrames, quanta);
 
   // Move the blob
   if (position == 0) direction = 1;

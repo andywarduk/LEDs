@@ -38,18 +38,7 @@ const int noIntensityValsShort = (sizeof(intensityValsShort) / sizeof(int));
 
 // Variables
 
-typedef struct
-{
-  int r;
-  int g;
-  int b;
-} ledDef;
-
-ledDef ledStruct[LEDs::noLeds];
-
-ledDef *leds[LEDs::noLeds];
-
-LEDs ledsClass;
+LEDs leds;
 
 
 // Functions
@@ -65,7 +54,7 @@ void setup()
   
   // Dump led pins
   Serial.print("ledPins["); Serial.print(LEDs::noLeds); Serial.print("] = {");
-  for(i=0; i<LEDs::noLeds; i++){
+  for(i = 0; i < LEDs::noLeds; i++){
      if(i > 0) Serial.print(", ");
      Serial.print(LEDs::ledPins[i]);
   }
@@ -85,7 +74,7 @@ void setup()
 
   // Dump intensities
   Serial.print("intensities["); Serial.print(noIntensity); Serial.print("] = {");
-  for(i=0; i<noIntensity; i++){
+  for(i = 0; i < noIntensity; i++){
      if(i > 0) Serial.print(", ");
      Serial.print(intensities[i]);
      Serial.print("%");
@@ -93,27 +82,19 @@ void setup()
   Serial.println("}");
 
   Serial.print("intensityValsLong["); Serial.print(noIntensityValsLong); Serial.print("] = {");
-  for(i=0; i<noIntensityValsLong; i++){
+  for(i = 0; i < noIntensityValsLong; i++){
      if(i > 0) Serial.print(", ");
      Serial.print(intensityValsLong[i]);
   }
   Serial.println("}");
 
   Serial.print("intensityValsShort["); Serial.print(noIntensityValsShort); Serial.print("] = {");
-  for(i=0; i<noIntensityValsShort; i++){
+  for(i = 0; i < noIntensityValsShort; i++){
      if(i > 0) Serial.print(", ");
      Serial.print(intensityValsShort[i]);
   }
   Serial.println("}");
 #endif
-
-  // initialise the LED structs and pointers.
-  for(i=0; i<LEDs::noLeds; i++){
-    leds[i] = &ledStruct[i];
-    ledStruct[i].r = 0;
-    ledStruct[i].g = 0;
-    ledStruct[i].b = 0;
-  }
 }
 
 
@@ -131,28 +112,27 @@ void loop()
   byte *stateBase;
   int i;
   int l;
-  ledDef *tmpLed;
 
-  for(stage=0; stage<4; stage++){
+  for(stage = 0; stage < 4; stage++){
 #ifdef DEBUG
     Serial.print("stage="); Serial.print(stage); Serial.println();
 #endif
 
     switch(stage){
     case 0:
-      p1 = offsetof(ledDef, b);
-      p2 = offsetof(ledDef, g);
-      p3 = offsetof(ledDef, r);
+      p1 = offsetof(LEDDef, b);
+      p2 = offsetof(LEDDef, g);
+      p3 = offsetof(LEDDef, r);
       break;
     case 1:
-      p1 = offsetof(ledDef, g);
-      p2 = offsetof(ledDef, r);
-      p3 = offsetof(ledDef, b);
+      p1 = offsetof(LEDDef, g);
+      p2 = offsetof(LEDDef, r);
+      p3 = offsetof(LEDDef, b);
       break;
     case 2:
-      p1 = offsetof(ledDef, r);
-      p2 = offsetof(ledDef, b);
-      p3 = offsetof(ledDef, g);
+      p1 = offsetof(LEDDef, r);
+      p2 = offsetof(LEDDef, b);
+      p3 = offsetof(LEDDef, g);
       break;
     }
 
@@ -162,29 +142,23 @@ void loop()
     Serial.print("p3="); Serial.print(p3); Serial.println();
 #endif
 
-    for(l1=0; l1<noIntensityValsShort; l1++){
+    for(l1 = 0; l1 < noIntensityValsShort; l1++){
 #ifdef DEBUG
       Serial.print("l1="); Serial.print(l1); Serial.println();
 #endif
-      for(l2=0; l2<noIntensityValsShort; l2++){
-        for(l3=0; l3<noIntensityValsLong; l3++){
-          stateBase = (byte *) leds[LEDs::noLeds - 1];
+      for(l2 = 0; l2 < noIntensityValsShort; l2++){
+        for(l3 = 0; l3 < noIntensityValsLong; l3++){
+          // Set the LED
+          stateBase = (byte *) leds.getLed(LEDs::noLeds - 1);
           *((int *)(stateBase + p1)) = intensities[intensityValsShort[l1]];
           *((int *)(stateBase + p2)) = intensities[intensityValsShort[l2]];
           *((int *)(stateBase + p3)) = intensities[intensityValsLong[l3]];
 
-          for(i=0; i<noFrames; i++){
-            for(l=0; l<LEDs::noLeds; l++){
-              ledsClass.setLed(l, leds[l]->r, leds[l]->g, leds[l]->b, quanta);
-            }
-          }
-          
-          // Move
-          tmpLed = leds[0];
-          for (i = 0; i < LEDs::noLeds - 1; i++) {
-            leds[i] = leds[i+1];
-          }
-          leds[LEDs::noLeds - 1] = tmpLed;
+          // Display the LEDs
+          leds.dispLeds(noFrames, quanta);
+
+          // SHuffle the LEDs down
+          leds.shuffleDown();          
         }
       }
     }

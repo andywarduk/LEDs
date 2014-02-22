@@ -13,7 +13,12 @@ LEDs::LEDs()
   for(i=0; i<noLeds; i++){
     pinMode(ledPins[i], OUTPUT);  
     digitalWrite(ledPins[i], HIGH);
-  }  
+
+    LEDOrder[i] = &LEDState[i];
+  }
+
+  // Reset the LED structs
+  resetLeds();
 
   // Set the colour pins as outputs
   pinMode(red, OUTPUT);     
@@ -40,7 +45,35 @@ LEDs::~LEDs()
   digitalWrite(blue, LOW);
 }
 
-void LEDs::setLed(int led, int r, int g, int b, int delay)
+LEDDef *LEDs::getLed(int led)
+{
+  return LEDOrder[led];
+}
+
+void LEDs::setLed(int led, int r, int g, int b)
+{
+  LEDDef *actLed;
+
+  actLed = LEDOrder[led];
+  actLed->r = r;
+  actLed->g = g;
+  actLed->b = b;
+}
+
+void LEDs::dispLeds(int count, int delay)
+{
+  int i, l;
+  LEDDef *actLed;
+
+  for(i = 0; i < count; i++){
+    for(l = 0; l < noLeds; l++){
+      actLed = LEDOrder[l];
+      dispLed(l, actLed->r, actLed->g, actLed->b, delay);
+    }
+  }
+}
+
+void LEDs::dispLed(int led, int r, int g, int b, int delay)
 {
   int i;
   int rc;
@@ -94,3 +127,27 @@ void LEDs::setLed(int led, int r, int g, int b, int delay)
   digitalWrite(ledPins[led], HIGH);  
 }
 
+void LEDs::resetLeds()
+{
+  int i;
+
+  // Initialise the LED structs
+  for(i = 0; i < noLeds; i++){
+    LEDState[i].r = 0;
+    LEDState[i].g = 0;
+    LEDState[i].b = 0;
+  }  
+}
+
+void LEDs::shuffleDown()
+{
+  LEDDef *tmpLed;
+  int i;
+
+  // Move
+  tmpLed = LEDOrder[0];
+  for (i = 0; i < LEDs::noLeds - 1; i++) {
+    LEDOrder[i] = LEDOrder[i + 1];
+  }
+  LEDOrder[LEDs::noLeds - 1] = tmpLed;
+}
