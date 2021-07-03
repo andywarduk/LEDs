@@ -3,10 +3,6 @@ extern int *gpio_pinmap;
 int gpio_setup();
 
 
-#define BCM2708_PERI_BASE        0x20000000
-#define GPIO_BASE                (BCM2708_PERI_BASE + 0x200000) // GPIO controller
-
-
 // Function select register
 #define GPIO_FSEL_OFFSET(g) ((g) / 10)
 #define GPIO_FSEL_REG(g) (*(gpio + GPIO_FSEL_OFFSET(g)))
@@ -39,3 +35,4 @@ int gpio_setup();
 #define GPIO_LEV_REG(g) (*(gpio + GPIO_LEV_OFFSET(g)))
 #define GPIO_LEV_SHIFT(g) ((g) % 32)
 #define GPIO_LEV(g) ((GPIO_LEV_REG(g) & (1 << GPIO_LEV_SHIFT(g))) >> GPIO_LEV_SHIFT(g))
+

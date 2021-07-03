@@ -1,6 +1,6 @@
 DEBUG=
 # Uncomment to build with DEBUG then make clean, make
-# DEBUG=-DDEBUG
+DEBUG=-DDEBUG
 
 TARGETS=dumpgpio rainbow shades knightrider reset coloursweep spectrum progress rate
 
