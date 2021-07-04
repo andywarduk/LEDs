@@ -13,6 +13,7 @@
 
 volatile unsigned *gpio = NULL;
 int *gpio_pinmap = NULL;
+unsigned gpio_pins = 0;
 
 
 // Pin                        [0]    1    2    3    4    5    6    7    8    9   10   11   12   13   14   15   16   17   18   19   20   21   22   23   24   25   26
@@ -22,6 +23,10 @@ static int gpio_pinmap_r1[] = {-1,  -1,  -1,   0,  -1,   1,  -1,   4,  14,  -1, 
 // Pin                        [0]    1    2    3    4    5    6    7    8    9   10   11   12   13   14   15   16   17   18   19   20   21   22   23   24   25   26
 // rev 2 map                       3v3  5v0  GP2  5V0  GP3  GND  GP4 GP14  GND GP15 GP17 GP18 GP27  GND GP22 GP23  3v3 GP24 GP10  GND  GP9 GP25 GP11  GP8  GND  GP7
 static int gpio_pinmap_r2[] = {-1,  -1,  -1,   2,  -1,   3,  -1,   4,  14,  -1,  15,  17,  18,  27,  -1,  22,  23,  -1,  24,  10,  -1,   9,  25,  11,   8,  -1,   7};
+
+// Pin                        [0]    1    2    3    4    5    6    7    8    9   10   11   12   13   14   15   16   17   18   19   20   21   22   23   24   25   26   27   28   29   30   31   32   33   34   35   36   37   38   39   40
+// rev 3 map                       3v3  5v0  GP2  5V0  GP3  GND  GP4 GP14  GND GP15 GP17 GP18 GP27  GND GP22 GP23  3v3 GP24 GP10  GND  GP9 GP25 GP11  GP8  GND  GP7 EEPR EEPR  GP5  GND  GP6 GP12 GP13  GND GP19 GP16 GP26 GP20  GND GP21
+static int gpio_pinmap_r3[] = {-1,  -1,  -1,   2,  -1,   3,  -1,   4,  14,  -1,  15,  17,  18,  27,  -1,  22,  23,  -1,  24,  10,  -1,   9,  25,  11,   8,  -1,   7,   0,   1,   5,  -1,   6,  12,  13,  -1,  19,  16,  26,  20,  -1,  21};
 
 static char *get_cpuinfo_revision();
 static int get_gpio_revision(void);
@@ -44,16 +49,22 @@ int gpio_setup()
     switch (rpi_revision) {
     case 1:
         gpio_pinmap = gpio_pinmap_r1;
+        gpio_pins = sizeof(gpio_pinmap_r1) / sizeof(gpio_pinmap_r1[0]);
         break;
     case 2:
         gpio_pinmap = gpio_pinmap_r2;
+        gpio_pins = sizeof(gpio_pinmap_r2) / sizeof(gpio_pinmap_r2[0]);
+        break;
+    case 3:
+        gpio_pinmap = gpio_pinmap_r3;
+        gpio_pins = sizeof(gpio_pinmap_r3) / sizeof(gpio_pinmap_r3[0]);
         break;
     default:
-        printf("Unable to get raspberry pi revision\n");
+        printf("Unable to get GPIO revision\n");
         return 0;
     }
 #ifdef DEBUG
-    printf("Running on Raspberry pi revision %d\n", rpi_revision);
+    printf("Running on Raspberry pi GPIO revision %d (%d pins)\n", rpi_revision, gpio_pins - 1);
 #endif
 
     // Get GPIO base address and length
@@ -119,7 +130,7 @@ static char *get_cpuinfo_revision()
     // Open cpuinfo
     if ((fp = fopen("/proc/cpuinfo", "r")) == NULL) return NULL;
 
-    // Read cuinfo line by line
+    // Read cpuinfo line by line
     while (!feof(fp)) {
         fgets(buffer, sizeof(buffer), fp);
        
@@ -151,20 +162,39 @@ static char *get_cpuinfo_revision()
 static int get_gpio_revision(void)
 {
     int rev = 0;
-    char *revision;
+    char *full_revision;
+    unsigned revision;
 
-    revision = get_cpuinfo_revision();
+    full_revision = get_cpuinfo_revision();
 
-    if (revision != NULL) {
-        if ((strcmp(revision, "0002") == 0) ||
-            (strcmp(revision, "1000002") == 0 ) ||
-            (strcmp(revision, "0003") == 0) ||
-            (strcmp(revision, "1000003") == 0 ))
-            rev = 1;
-        else // assume rev 2+
-            rev = 2;
+    if (full_revision != NULL) {
+        if (strlen(full_revision) >= 4 && sscanf(full_revision + strlen(full_revision) - 4, "%x", &revision)) {
+#ifdef DEBUG
+            printf("cpuinfo revision bits: %x\n", revision);
+#endif
 
-        free(revision);
+            switch (revision) {
+                case 0x0002: // Pi 1 Model B (Egoman 256Mb)
+                case 0x0003: // Pi 1 Model B (Egoman 256Mb)
+                    rev = 1;
+                    break;
+                case 0x0004: // Pi 1 Model B (Sony UK 256Mb)
+                case 0x0005: // Pi 1 Model B (Qisda 256Mb)
+                case 0x0007: // Pi 1 Model A (Egoman 256Mb)
+                case 0x0008: // Pi 1 Model A (Sony UK 256Mb)
+                case 0x0009: // Pi 1 Model A (Qisda 256Mb)
+                case 0x000d: // Pi 1 Model B (Egoman 512Mb)
+                case 0x000e: // Pi 1 Model B (Sony UK 512Mb)
+                case 0x000f: // Pi 1 Model B (Egoman 512Mb)
+                    rev = 2;
+                    break;
+                default: // Pi 1 B+ and Pi 2 onwards
+                    rev = 3;
+                    break;
+            }
+        }
+
+        free(full_revision);
     }
 
     return rev;

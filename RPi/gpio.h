@@ -1,5 +1,6 @@
 extern volatile unsigned int *gpio;
 extern int *gpio_pinmap;
+extern unsigned gpio_pins;
 int gpio_setup();
 
 

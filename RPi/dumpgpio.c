@@ -2,6 +2,41 @@
 #include <stdlib.h>
 #include "gpio.h"
 
+void dump_reg(int offset, char *name, unsigned bitmod) {
+    unsigned value;
+
+    value = *(gpio + offset);
+    fprintf(stdout, "  GP%-7s : 0x%08x : ", name, value);
+
+    for (int bit = 31; bit >= 0; bit--) {
+        if (value & (1 << bit)) {
+            putc('1', stdout);
+        } else {
+            putc('0', stdout);
+        }
+
+        if (bitmod && (bit % bitmod) == 0) {
+            putc(' ', stdout);
+        }
+    }
+    fputs("\n", stdout);
+}
+
+void dump_regn(int offset, int reg, char *name, unsigned bitmod) {
+    char fullname[32];
+
+    sprintf(fullname, "%s%d", name, reg);
+    dump_reg(offset + reg, fullname, bitmod);
+}
+
+int find_pin(int gpio) {
+    for (unsigned i = 1; i < gpio_pins; i++) {
+        if (gpio_pinmap[i] == gpio) return i;
+    }
+
+    return -1;
+}
+
 int main()
 {
     int i;
@@ -10,24 +45,56 @@ int main()
     if (!gpio_setup()) exit(-1);
 
     printf("Register dump:\n");
-    printf("  GPFSEL0: %08x\n", *(gpio + 0));
-    printf("  GPFSEL1: %08x\n", *(gpio + 1));
-    printf("  GPFSEL2: %08x\n", *(gpio + 2));
-    printf("  GPFSEL3: %08x\n", *(gpio + 3));
-    printf("  GPFSEL4: %08x\n", *(gpio + 4));
-    printf("  GPFSEL5: %08x\n", *(gpio + 5));
 
-    printf("  GPSET0: %08x\n", *(gpio + 7));
-    printf("  GPSET1: %08x\n", *(gpio + 8));
-    
-    printf("  GPCLR0: %08x\n", *(gpio + 10));
-    printf("  GPCLR1: %08x\n", *(gpio + 11));
-    
-    printf("  GPLEV0: %08x\n", *(gpio + 13));
-    printf("  GPLEV1: %08x\n", *(gpio + 14));
+    for (i = 0; i < 6; i++) {
+        dump_regn(0, i, "FSEL", 3);
+    }
+
+    for (i = 0; i < 2; i++) {
+        dump_regn(13, i, "LEV", 4);
+    }
+
+    for (i = 0; i < 2; i++) {
+        dump_regn(16, i, "EDS", 4);
+    }
+
+    for (i = 0; i < 2; i++) {
+        dump_regn(19, i, "REN", 4);
+    }
+
+    for (i = 0; i < 2; i++) {
+        dump_regn(22, i, "FEN", 4);
+    }
+
+    for (i = 0; i < 2; i++) {
+        dump_regn(25, i, "HEN", 4);
+    }
+
+    for (i = 0; i < 2; i++) {
+        dump_regn(28, i, "LEN", 4);
+    }
+
+    for (i = 0; i < 2; i++) {
+        dump_regn(31, i, "AREN", 4);
+    }
+
+    for (i = 0; i < 2; i++) {
+        dump_regn(34, i, "AFEN", 4);
+    }
+
+    dump_reg(37, "PUD", 4);
+    for (i = 0; i < 2; i++) {
+        dump_regn(38, i, "PUDCLK", 4);
+    }
 
     for (i = 0; i < 54; i++) {
         printf("GPIO %2d: ", i);
+
+        int pin = find_pin(i);
+
+        if (pin >=0 ) {
+            printf("pin %d, ", pin);
+        }
         
         mode = GPIO_FSEL_MODE(i);
         printf("mode %d, ", mode);
